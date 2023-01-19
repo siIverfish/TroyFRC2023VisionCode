@@ -65,8 +65,8 @@ if cube:
                     max_index = i
         
         cv2.circle(frame, (int(coord[0]), int(coord[1])), 5, (255, 255, 255), -1)
-        vision_nt.putNumber('xError', coord[0] - center_coord)
-        vision_nt.putNumber('yError', center_coord - coord[1])
+        vision_nt.putNumber('xError', coord[0] - center_coord[0])
+        vision_nt.putNumber('yError', center_coord[1] - coord[1])
 
         # cv2.putText(frame, str(1/(time.time() - startTime)), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
         # cv2.imshow('frame', frame)
@@ -118,8 +118,8 @@ else:
                     max_index = i
         
         cv2.circle(frame, (int(coord[0]), int(coord[1])), 5, (255, 255, 255), -1)
-        vision_nt.putNumber('xError', coord[0] - center_coord)
-        vision_nt.putNumber('yError', center_coord - coord[1])
+        vision_nt.putNumber('xError', coord[0] - center_coord[0])
+        vision_nt.putNumber('yError', center_coord[1] - coord[1])
 
         cv2.imshow("result",noise_reduction)
         cv2.imshow("normal",frame)
