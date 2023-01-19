@@ -7,6 +7,11 @@ from networktables import NetworkTable, NetworkTables
 cube = True
 cap = cv2.VideoCapture(1+cv2.CAP_DSHOW)
 
+x_res = 720 #determine later
+y_res = 480 #determine later
+
+center_coord = np.array([x_res/2, y_res/2])
+
 cond = threading.Condition()
 notified = [False]
 
@@ -40,11 +45,6 @@ if cube:
         noise_reduction = cv2.erode(thresh, np.ones((10, 10), np.uint8), iterations = 1)
         M = cv2.moments(noise_reduction)
 
-        # if M["m00"] != 0:
-        #     cX = int(M["m10"] / M["m00"])
-        #     cY = int(M["m01"] / M["m00"])
-        #     cv2.circle(frame, (cX, cY), 5, (255, 255, 255), -1)
-         # calculate x,y coordinate of center
         contours, hierarchy = cv2.findContours(noise_reduction,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         max_index = 0
         max_area = 0
@@ -65,8 +65,8 @@ if cube:
                     max_index = i
         
         cv2.circle(frame, (int(coord[0]), int(coord[1])), 5, (255, 255, 255), -1)
-        vision_nt.putNumber('x', coord[0])
-        vision_nt.putNumber('y', coord[1])
+        vision_nt.putNumber('xError', coord[0] - center_coord)
+        vision_nt.putNumber('yError', center_coord - coord[1])
 
         # cv2.putText(frame, str(1/(time.time() - startTime)), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
         # cv2.imshow('frame', frame)
@@ -118,8 +118,8 @@ else:
                     max_index = i
         
         cv2.circle(frame, (int(coord[0]), int(coord[1])), 5, (255, 255, 255), -1)
-        vision_nt.putNumber('x', coord[0])
-        vision_nt.putNumber('y', coord[1])
+        vision_nt.putNumber('xError', coord[0] - center_coord)
+        vision_nt.putNumber('yError', center_coord - coord[1])
 
         cv2.imshow("result",noise_reduction)
         cv2.imshow("normal",frame)
@@ -128,10 +128,3 @@ else:
             break
         fps = round(1.0 / (time.time() - start_time))
         # print("FPS: ", fps)
-
-
-        #cv2.imshow("result",noise_reduction)
-        #cv2.imshow("normal",frame)
-        #cv2.imshow("normal2",noise_reduction)
-        #if cv2.waitKey(1) & 0xFF == ord('q'):
-        #    break
