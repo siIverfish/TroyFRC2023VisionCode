@@ -60,43 +60,54 @@ def getOrientation(pts, img):
  
   return angle
  
-# Load the image
-img = cap.read()
+cap = cv.VideoCapture(0 + cv.CAP_DSHOW)
  
-# Was the image there?
-if img is None:
-  print("Error: File not found")
-  exit(0)
- 
-cv.imshow('Input Image', img)
- 
-# Convert image to grayscale
-gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
- 
-# Convert image to binary
-_, bw = cv.threshold(gray, 50, 255, cv.THRESH_BINARY | cv.THRESH_OTSU)
- 
-# Find all the contours in the thresholded image
-contours, _ = cv.findContours(bw, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
- 
-for i, c in enumerate(contours):
- 
-  # Calculate the area of each contour
-  area = cv.contourArea(c)
- 
-  # Ignore contours that are too small or too large
-  if area < 3700 or 100000 < area:
-    continue
- 
-  # Draw each contour only for visualisation purposes
-  cv.drawContours(img, contours, i, (0, 0, 255), 2)
- 
-  # Find the orientation of each shape
-  getOrientation(c, img)
- 
-cv.imshow('Output Image', img)
-cv.waitKey(0)
-cv.destroyAllWindows()
+lower_threshold = np.array([18, 44, 101])   # determined experimentally
+upper_threshold = np.array([31, 232, 255])   # determined experimentally
+
+while True:
+    # Load the image
+    ret, img = cap.read()
+
+    # Was the image there?
+    if img is None:
+        print("Error: File not found")
+        exit(0)
+
+    cv.imshow('Input Image', img)
+
+    #convert image to HSV
+    hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
+
+    # convert the hsv image to binary image + noise reduction
+    thresh = cv.inRange(hsv, lower_threshold, upper_threshold)
+    noise_reduction = cv.blur(thresh,(20,20))
+    noise_reduction = cv.inRange(noise_reduction, 1, 75)
+    noise_reduction = cv.erode(thresh, np.ones((10, 10), np.uint8), iterations = 1)
+    
+    # Find all the contours in the thresholded image
+    contours, _ = cv.findContours(noise_reduction, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
+    if not len(contours) == 0:
+        max_area_contour = contours[0]
+    for i, c in enumerate(contours):
+        area = cv.contourArea(c)
+        if area > cv.contourArea(max_area_contour):
+            max_area_contour = c
+        
+        # Ignore contours that are too small or too large
+        if area < 1000 or 100000 < area:
+            continue
+        
+        # Draw each contour only for visualisation purposes
+        cv.drawContours(img, contours, i, (0, 0, 255), 2)
+        
+        # Find the orientation of each shape
+        getOrientation(max_area_contour, img)
+    
+    cv.imshow('Output Image', img)
+    cv.imshow('Noise Reduction', noise_reduction)
+    if cv.waitKey(1) & 0xFF == ord('q'):
+        break
   
 # Save the output image to the current directory
-cv.imwrite("output_img.jpg", img)
+# cv.imwrite("output_img.jpg", img)

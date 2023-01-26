@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
 import time
-import threading
-from networktables import NetworkTable, NetworkTables
 
 cube = True
 cap = cv2.VideoCapture(1+cv2.CAP_DSHOW)
@@ -12,6 +10,8 @@ y_res = 480 #determine later
 
 center_coord = np.array([x_res/2, y_res/2])
 
+
+"""
 cond = threading.Condition()
 notified = [False]
 
@@ -31,6 +31,7 @@ with cond:
         cond.wait()
 #get the table
 vision_nt = NetworkTables.getTable('Vision')
+"""
 
 if cube:
     lower_threshold_cube = np.array([118,87,86])
@@ -65,9 +66,11 @@ if cube:
                     max_index = i
         
         cv2.circle(frame, (int(coord[0]), int(coord[1])), 5, (255, 255, 255), -1)
+        """
         vision_nt.putNumber('xError', coord[0] - center_coord[0])
         vision_nt.putNumber('yError', center_coord[1] - coord[1])
         vision_nt.putNumber('area', M['m00'])
+        """
 
         # cv2.putText(frame, str(1/(time.time() - startTime)), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
         # cv2.imshow('frame', frame)
@@ -119,10 +122,11 @@ else:
                     max_index = i
         
         cv2.circle(frame, (int(coord[0]), int(coord[1])), 5, (255, 255, 255), -1)
+        """
         vision_nt.putNumber('xError', coord[0] - center_coord[0])
         vision_nt.putNumber('yError', center_coord[1] - coord[1])
         vision_nt.putNumber('area', M['m00'])
-
+        """
         cv2.imshow("result",noise_reduction)
         cv2.imshow("normal",frame)
         #cv2.imshow("normal2",noise_reduction)
