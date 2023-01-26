@@ -54,7 +54,8 @@ def getOrientation(pts, img):
   ## [visualization]
  
   # Label with the rotation angle
-  label = "  Rotation Angle: " + str(-int(np.rad2deg(angle)) - 90) + " degrees"
+  # label = "  Rotation Angle: " + str(-int(np.rad2deg(angle)) - 90) + " degrees"
+  label = "  Rotation Angle: " + str(int(np.rad2deg(angle))) + " degrees"
   textbox = cv.rectangle(img, (cntr[0], cntr[1]-25), (cntr[0] + 250, cntr[1] + 10), (255,255,255), -1)
   cv.putText(img, label, (cntr[0], cntr[1]), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv.LINE_AA)
  
