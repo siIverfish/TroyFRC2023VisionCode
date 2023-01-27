@@ -2,6 +2,7 @@ import cv2 as cv
 from math import atan2, cos, sin, sqrt, pi
 import numpy as np
  
+DELTAVALUE = 20 # variation for how wide the angle "upright" can be, in each direction
 def drawAxis(img, p_, q_, color, scale):
   p = list(p_)
   q = list(q_)
@@ -61,6 +62,14 @@ def getOrientation(pts, img):
  
   return angle
  
+def returnOrientation(angle): # return true if angle is within upright range
+    if angle < (90 + DELTAVALUE) and angle > (90 - DELTAVALUE):
+        return True
+        # return True
+    else:
+        return False
+        # return False
+
 cap = cv.VideoCapture(0 + cv.CAP_DSHOW)
  
 lower_threshold = np.array([18, 44, 101])   # determined experimentally
@@ -103,8 +112,9 @@ while True:
         cv.drawContours(img, contours, i, (0, 0, 255), 2)
         
         # Find the orientation of each shape
-        getOrientation(max_area_contour, img)
-    
+        angle = getOrientation(max_area_contour, img)
+        print (returnOrientation(np.rad2deg(angle))) # function to print out if upright or not
+
     cv.imshow('Output Image', img)
     cv.imshow('Noise Reduction', noise_reduction)
     if cv.waitKey(1) & 0xFF == ord('q'):
