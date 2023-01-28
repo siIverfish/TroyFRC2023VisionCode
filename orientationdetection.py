@@ -12,8 +12,8 @@ def drawAxis(img, p_, q_, color, scale):
   hypotenuse = sqrt((p[1] - q[1]) * (p[1] - q[1]) + (p[0] - q[0]) * (p[0] - q[0]))
  
   # Here we lengthen the arrow by a factor of scale
-  q[0] = p[0] - scale * hypotenuse * cos(angle)
-  q[1] = p[1] - scale * hypotenuse * sin(angle)
+  #q[0] = p[0] - scale * hypotenuse * cos(angle)
+  #q[1] = p[1] - scale * hypotenuse * sin(angle)
   cv.line(img, (int(p[0]), int(p[1])), (int(q[0]), int(q[1])), color, 3, cv.LINE_AA)
  
   # create the arrow hooks
@@ -46,8 +46,8 @@ def getOrientation(pts, img):
   ## [visualization]
   # Draw the principal components
   cv.circle(img, cntr, 3, (255, 0, 255), 2)
-  p1 = (cntr[0] + 0.02 * eigenvectors[0,0] * eigenvalues[0,0], cntr[1] + 0.02 * eigenvectors[0,1] * eigenvalues[0,0])
-  p2 = (cntr[0] - 0.02 * eigenvectors[1,0] * eigenvalues[1,0], cntr[1] - 0.02 * eigenvectors[1,1] * eigenvalues[1,0])
+  p1 = (cntr[0] + 0.02 * eigenvectors[0,0] * eigenvalues[0,0], cntr[1] + 0.02 * eigenvectors[0,1] * eigenvalues[0,0]) # ref line
+  p2 = (cntr[0] - 0.02 * eigenvectors[1,0] * eigenvalues[1,0], cntr[1] - 0.02 * eigenvectors[1,1] * eigenvalues[1,0]) # the angle of the thingy
   drawAxis(img, cntr, p1, (255, 255, 0), 1)
   drawAxis(img, cntr, p2, (0, 0, 255), 5)
  
