@@ -90,7 +90,7 @@ while True:
 
     cv.imshow('Input Image', img)
 
-    #convert image to HSV
+    # convert image to HSV
     hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
 
     # convert the hsv image to binary image + noise reduction
@@ -116,7 +116,7 @@ while True:
         
         #india
 
-        M = cv.moments(c)
+        M = cv.moments(max_area_contour)
         cX = int(M["m10"] / M["m00"])
         cY = int(M["m01"] / M["m00"])
         # draw the contour and center of the shape on the image
@@ -136,19 +136,45 @@ while True:
         cv.drawContours(img, contours, i, (0, 0, 255), 2)
 
         (x,y),(MA,ma),angle = cv.fitEllipse(max_area_contour)
-        ave_y = (leftmost[1] + rightmost[1] + topmost[1] + bottommost[1]) / 4
-        if previous_angle is None or abs(angle - previous_angle) > 90:
-            if ave_y > cY:
-                invert_angle = True
-            else:
+        
+        # ave_y = (leftmost[1] + rightmost[1] + topmost[1] + bottommost[1]) / 4
+
+        # if previous_angle is None or abs(angle - previous_angle) > 90:
+        #     if ave_y > cY:
+        #         invert_angle = True
+        #     else:
+        #         invert_angle = False
+
+        count = 0
+        if leftmost[1] > cY:
+          count += 1
+        if rightmost[1] > cy:
+          count += 1
+        if topmost[1] > cY:
+          count += 1
+        if bottommost[1] > cY:
+          count += 1
+
+        if previous_angle is not None:
+            continue
+        
+        if angle - previous_angle > 90: # jumping from 0 to 180 degrees
+            if count > 2: # cone tip pointing down
                 invert_angle = False
+            else: # cone tip pointing up
+                invert_angle = True
+        elif angle - previous_angle < -90: # jumping from 180 to 0 degrees
+            if count > 2: # cone tip pointing down
+                invert_angle = True
+            else: # cone tip pointing up
+                invert_angle = False
+
+        previous_angle = angle
         
         if invert_angle:
             print (angle + 180)
         else:
             print (angle)
-
-        previous_angle = angle
         
         # Find the orientation of each shape
         #angle = getOrientation(max_area_contour, img)
