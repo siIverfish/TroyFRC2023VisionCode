@@ -63,6 +63,7 @@ def getOrientation(pts, img):
   return angle
  
 def returnOrientation(angle): # return true if angle is within upright range
+    print(angle)
     if angle < (90 + DELTAVALUE) and angle > (90 - DELTAVALUE):
         return True
         # return True
@@ -99,6 +100,7 @@ while True:
     contours, _ = cv.findContours(noise_reduction, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
     if not len(contours) == 0:
         max_area_contour = contours[0]
+
     for i, c in enumerate(contours):
         area = cv.contourArea(c)
         if area > cv.contourArea(max_area_contour):
@@ -110,10 +112,13 @@ while True:
         
         # Draw each contour only for visualisation purposes
         cv.drawContours(img, contours, i, (0, 0, 255), 2)
+
+        (x,y),(MA,ma),angle = cv.fitEllipse(max_area_contour)
+        print (angle)
         
         # Find the orientation of each shape
-        angle = getOrientation(max_area_contour, img)
-        print (returnOrientation(np.rad2deg(angle))) # function to print out if upright or not
+        #angle = getOrientation(max_area_contour, img)
+        #print (returnOrientation(np.rad2deg(angle))) # function to print out if upright or not
 
     cv.imshow('Output Image', img)
     cv.imshow('Noise Reduction', noise_reduction)
