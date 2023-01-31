@@ -40,16 +40,16 @@ def getOrientation(pts, img):
   mean, eigenvectors, eigenvalues = cv.PCACompute2(data_pts, mean)
  
   # Store the center of the object
-  cntr = (int(mean[0,0]), int(mean[0,1]))
+  max_area_contourr = (int(mean[0,0]), int(mean[0,1]))
   ## [pca]
  
   ## [visualization]
   # Draw the principal components
-  cv.circle(img, cntr, 3, (255, 0, 255), 2)
-  p1 = (cntr[0] + 0.02 * eigenvectors[0,0] * eigenvalues[0,0], cntr[1] + 0.02 * eigenvectors[0,1] * eigenvalues[0,0]) # ref line
-  p2 = (cntr[0] - 0.02 * eigenvectors[1,0] * eigenvalues[1,0], cntr[1] - 0.02 * eigenvectors[1,1] * eigenvalues[1,0]) # the angle of the thingy
-  drawAxis(img, cntr, p1, (255, 255, 0), 1)
-  drawAxis(img, cntr, p2, (0, 0, 255), 5)
+  cv.circle(img, max_area_contourr, 3, (255, 0, 255), 2)
+  p1 = (max_area_contourr[0] + 0.02 * eigenvectors[0,0] * eigenvalues[0,0], max_area_contourr[1] + 0.02 * eigenvectors[0,1] * eigenvalues[0,0]) # ref line
+  p2 = (max_area_contourr[0] - 0.02 * eigenvectors[1,0] * eigenvalues[1,0], max_area_contourr[1] - 0.02 * eigenvectors[1,1] * eigenvalues[1,0]) # the angle of the thingy
+  drawAxis(img, max_area_contourr, p1, (255, 255, 0), 1)
+  drawAxis(img, max_area_contourr, p2, (0, 0, 255), 5)
  
   angle = atan2(eigenvectors[0,1], eigenvectors[0,0]) # orientation in radians
   ## [visualization]
@@ -57,8 +57,8 @@ def getOrientation(pts, img):
   # Label with the rotation angle
   # label = "  Rotation Angle: " + str(-int(np.rad2deg(angle)) - 90) + " degrees"
   label = "  Rotation Angle: " + str(int(np.rad2deg(angle))) + " degrees"
-  textbox = cv.rectangle(img, (cntr[0], cntr[1]-25), (cntr[0] + 250, cntr[1] + 10), (255,255,255), -1)
-  cv.putText(img, label, (cntr[0], cntr[1]), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv.LINE_AA)
+  textbox = cv.rectangle(img, (max_area_contourr[0], max_area_contourr[1]-25), (max_area_contourr[0] + 250, max_area_contourr[1] + 10), (255,255,255), -1)
+  cv.putText(img, label, (max_area_contourr[0], max_area_contourr[1]), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv.LINE_AA)
  
   return angle
  
@@ -97,6 +97,7 @@ while True:
     
     # Find all the contours in the thresholded image
     contours, _ = cv.findContours(noise_reduction, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
+
     if not len(contours) == 0:
         max_area_contour = contours[0]
     for i, c in enumerate(contours):
@@ -108,6 +109,17 @@ while True:
         if area < 1000 or 100000 < area:
             continue
         
+        #india
+        leftmost = tuple(max_area_contour[max_area_contour[:,:,0].argmin()][0])
+        rightmost = tuple(max_area_contour[max_area_contour[:,:,0].argmax()][0])
+        topmost = tuple(max_area_contour[max_area_contour[:,:,1].argmin()][0])
+        bottommost = tuple(max_area_contour[max_area_contour[:,:,1].argmax()][0])
+
+        cv.circle(img, leftmost, 3, (255, 0, 255), 2)
+        cv.circle(img, rightmost, 3, (255, 0, 255), 2)
+        cv.circle(img, topmost, 3, (255, 0, 255), 2)
+        cv.circle(img, bottommost, 3, (255, 0, 255), 2)
+
         # Draw each contour only for visualisation purposes
         cv.drawContours(img, contours, i, (0, 0, 255), 2)
         
