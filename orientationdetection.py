@@ -76,6 +76,9 @@ cap = cv.VideoCapture(0 + cv.CAP_DSHOW)
 lower_threshold = np.array([18, 44, 101])   # determined experimentally
 upper_threshold = np.array([31, 232, 255])   # determined experimentally
 
+invert_angle = False
+previous_angle = None
+
 while True:
     # Load the image
     ret, img = cap.read()
@@ -112,21 +115,40 @@ while True:
             continue
         
         #india
+
+        M = cv.moments(c)
+        cX = int(M["m10"] / M["m00"])
+        cY = int(M["m01"] / M["m00"])
+        # draw the contour and center of the shape on the image
+        cv.circle(img, (cX, cY), 7, (0, 0, 0), -1)
+
         leftmost = tuple(max_area_contour[max_area_contour[:,:,0].argmin()][0])
         rightmost = tuple(max_area_contour[max_area_contour[:,:,0].argmax()][0])
         topmost = tuple(max_area_contour[max_area_contour[:,:,1].argmin()][0])
         bottommost = tuple(max_area_contour[max_area_contour[:,:,1].argmax()][0])
 
-        cv.circle(img, leftmost, 3, (255, 0, 255), 2)
-        cv.circle(img, rightmost, 3, (255, 0, 255), 2)
-        cv.circle(img, topmost, 3, (255, 0, 255), 2)
-        cv.circle(img, bottommost, 3, (255, 0, 255), 2)
+        cv.circle(img, leftmost, 5, (0, 0, 0), 2)
+        cv.circle(img, rightmost, 5, (0, 0, 0), 2)
+        cv.circle(img, topmost, 5, (0, 0, 0), 2)
+        cv.circle(img, bottommost, 5, (0, 0, 0), 2)
 
         # Draw each contour only for visualisation purposes
         cv.drawContours(img, contours, i, (0, 0, 255), 2)
 
         (x,y),(MA,ma),angle = cv.fitEllipse(max_area_contour)
-        print (angle)
+        ave_y = (leftmost[1] + rightmost[1] + topmost[1] + bottommost[1]) / 4
+        if previous_angle is None or abs(angle - previous_angle) > 90:
+            if ave_y > cY:
+                invert_angle = True
+            else:
+                invert_angle = False
+        
+        if invert_angle:
+            print (angle + 180)
+        else:
+            print (angle)
+
+        previous_angle = angle
         
         # Find the orientation of each shape
         #angle = getOrientation(max_area_contour, img)
