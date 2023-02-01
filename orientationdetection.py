@@ -78,14 +78,6 @@ while True:
         cv.drawContours(img, contours, i, (0, 0, 255), 2)
 
         (x,y),(MA,ma),angle = cv.fitEllipse(max_area_contour)
-        
-        # ave_y = (leftmost[1] + rightmost[1] + topmost[1] + bottommost[1]) / 4
-
-        # if previous_angle is None or abs(angle - previous_angle) > 90:
-        #     if ave_y > cY:
-        #         invert_angle = True
-        #     else:
-        #         invert_angle = False
 
         count = 0
         if leftmost[1] > cY:
@@ -99,25 +91,21 @@ while True:
         
         if previous_angle is None or angle - previous_angle > 90: # jumping from 0 to 180 degrees
             if count > 2: # cone tip pointing down
-                invert_angle = False
-            else: # cone tip pointing up
                 invert_angle = True
+            else: # cone tip pointing up
+                invert_angle = False
         elif angle - previous_angle < -90: # jumping from 180 to 0 degrees
             if count > 2: # cone tip pointing down
-                invert_angle = True
-            else: # cone tip pointing up
                 invert_angle = False
+            else: # cone tip pointing up
+                invert_angle = True
 
         previous_angle = angle
         
         if invert_angle:
-            print (angle)
-        else:
-            print (angle + 180)
+            angle += 180
         
-        # Find the orientation of each shape
-        #angle = getOrientation(max_area_contour, img)
-        #print (returnOrientation(np.rad2deg(angle))) # function to print out if upright or not
+        print (angle)
 
     cv.imshow('Output Image', img)
     cv.imshow('Noise Reduction', noise_reduction)
