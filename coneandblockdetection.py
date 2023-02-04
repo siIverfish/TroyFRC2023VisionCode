@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import time
 
-cube = True
+cube = False 
 cap = cv2.VideoCapture(1+cv2.CAP_DSHOW)
 
 x_res = 720 #determine later
