@@ -30,7 +30,7 @@ def runPipeline(image, llrobot):
 
     if not len(contours) == 0:
         max_area_contour = contours[0]
-        for i, c in enumerate(contours):
+        for c in contours:
             area = cv.contourArea(c)
             # Ignore contours that are too small or too large
             if area < 1000 or 300000 < area:
@@ -40,7 +40,7 @@ def runPipeline(image, llrobot):
                 max_area_contour = c
 
         M = cv.moments(max_area_contour)
-        if not M['m00'] == 0:
+        if not M['m00'] == 0 and len(max_area_contour) > 5:
             cX = int(M["m10"] / M["m00"])
             cY = int(M["m01"] / M["m00"])
             llpython[1] = cX
