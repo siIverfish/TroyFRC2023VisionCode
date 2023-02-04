@@ -1,39 +1,23 @@
 import cv2 as cv
 from math import atan2, cos, sin, sqrt, pi
 import numpy as np
- 
-DELTAVALUE = 20 # variation for how wide the angle "upright" can be, in each direction
- 
-def returnOrientation(angle): # return true if angle is within upright range
-    print(angle)
-    if angle < (90 + DELTAVALUE) and angle > (90 - DELTAVALUE):
-        return True
-        # return True
-    else:
-        return False
-        # return False
-
-cap = cv.VideoCapture(1 + cv.CAP_DSHOW)
- 
-lower_threshold = np.array([15, 0, 120])   # determined experimentally
-upper_threshold = np.array([31, 255, 255])   # determined experimentally
 
 invert_angle = False
 previous_angle = None
 
-while True:
-    # Load the image
-    ret, img = cap.read()
+def runPipeline(image, llrobot):
+    global invert_angle
+    global previous_angle
+    #constants for code
+    lower_threshold = np.array([15, 0, 120])   # determined experimentally
+    upper_threshold = np.array([31, 255, 255])   # determined experimentally
 
-    # Was the image there?
-    if img is None:
-        print("Error: File not found")
-        exit(0)
-
-    #cv.imshow('Input Image', img)
+    #initialize variables in case they return nothing
+    max_area_contour = np.array([[]])
+    llpython = [0,0,0]
 
     # convert image to HSV
-    hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
+    hsv = cv.cvtColor(image, cv.COLOR_BGR2HSV)
 
     # convert the hsv image to binary image + noise reduction
     thresh = cv.inRange(hsv, lower_threshold, upper_threshold)
@@ -59,18 +43,20 @@ while True:
         if not M['m00'] == 0:
             cX = int(M["m10"] / M["m00"])
             cY = int(M["m01"] / M["m00"])
+            llpython[1] = cX
+            llpython[2] = cY
             # draw the contour and center of the shape on the image
-            cv.circle(img, (cX, cY), 7, (0, 0, 0), -1)
+            cv.circle(image, (cX, cY), 7, (0, 0, 0), -1)
 
             leftmost = tuple(max_area_contour[max_area_contour[:,:,0].argmin()][0])
             rightmost = tuple(max_area_contour[max_area_contour[:,:,0].argmax()][0])
             topmost = tuple(max_area_contour[max_area_contour[:,:,1].argmin()][0])
             bottommost = tuple(max_area_contour[max_area_contour[:,:,1].argmax()][0])
 
-            cv.circle(img, leftmost, 5, (0, 0, 0), 2)
-            cv.circle(img, rightmost, 5, (0, 0, 0), 2)
-            cv.circle(img, topmost, 5, (0, 0, 0), 2)
-            cv.circle(img, bottommost, 5, (0, 0, 0), 2)
+            cv.circle(image, leftmost, 5, (0, 0, 0), 2)
+            cv.circle(image, rightmost, 5, (0, 0, 0), 2)
+            cv.circle(image, topmost, 5, (0, 0, 0), 2)
+            cv.circle(image, bottommost, 5, (0, 0, 0), 2)
 
             (x,y),(MA,ma),angle = cv.fitEllipse(max_area_contour)
 
@@ -99,12 +85,9 @@ while True:
 
             if invert_angle:
                 angle += 180
-            print (angle)
 
-    cv.imshow('Output Image', img)
-    #cv.imshow('Noise Reduction', noise_reduction)
-    if cv.waitKey(1) & 0xFF == ord('q'):
-        break
+            image = cv.putText(image, str(round(angle)), (50,50), cv.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2, cv.LINE_AA)    
+            llpython[0] = angle
+
+    return max_area_contour,image,llpython
   
-# Save the output image to the current directory
-# cv.imwrite("output_img.jpg", img)
