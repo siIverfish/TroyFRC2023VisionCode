@@ -47,84 +47,91 @@ while True:
     # Find all the contours in the thresholded image
     contours, _ = cv.findContours(noise_reduction, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
 
-    if not len(contours) == 0:
-        max_area_contour = contours[0]
-        for i, c in enumerate(contours):
-            area = cv.contourArea(c)
-            # Ignore contours that are too small or too large
-            if area < 1000 or 300000 < area:
-                continue
+    # make this if not indent everything
+    if len(contours) == 0:
+        cv.imshow('Output Image', img)
+        #cv.imshow('Noise Reduction', noise_reduction)
+        if cv.waitKey(1) & 0xFF == ord('q'):
+            break
+        continue
 
-            if area > cv.contourArea(max_area_contour):
-                max_area_contour = c
+    max_area_contour = contours[0]
+    for i, c in enumerate(contours):
+        area = cv.contourArea(c)
+        # Ignore contours that are too small or too large
+        if area < 1000 or 300000 < area:
+            continue
 
-        M = cv.moments(max_area_contour)
-        if not M['m00'] == 0:
-            cX = int(M["m10"] / M["m00"])
-            cY = int(M["m01"] / M["m00"])
-            # draw the contour and center of the shape on the image
-            cv.circle(img, (cX, cY), 7, (0, 0, 0), -1)
+        if area > cv.contourArea(max_area_contour):
+            max_area_contour = c
 
-            leftmost = tuple(max_area_contour[max_area_contour[:,:,0].argmin()][0])
-            rightmost = tuple(max_area_contour[max_area_contour[:,:,0].argmax()][0])
-            topmost = tuple(max_area_contour[max_area_contour[:,:,1].argmin()][0])
-            bottommost = tuple(max_area_contour[max_area_contour[:,:,1].argmax()][0])
+    M = cv.moments(max_area_contour)
+    if not M['m00'] == 0:
+        cX = int(M["m10"] / M["m00"])
+        cY = int(M["m01"] / M["m00"])
+        # draw the contour and center of the shape on the image
+        cv.circle(img, (cX, cY), 7, (0, 0, 0), -1)
 
-            cv.circle(img, leftmost, 5, (0, 0, 0), 2)
-            cv.circle(img, rightmost, 5, (0, 0, 0), 2)
-            cv.circle(img, topmost, 5, (0, 0, 0), 2)
-            cv.circle(img, bottommost, 5, (0, 0, 0), 2)
+        leftmost = tuple(max_area_contour[max_area_contour[:,:,0].argmin()][0])
+        rightmost = tuple(max_area_contour[max_area_contour[:,:,0].argmax()][0])
+        topmost = tuple(max_area_contour[max_area_contour[:,:,1].argmin()][0])
+        bottommost = tuple(max_area_contour[max_area_contour[:,:,1].argmax()][0])
 
-            (x,y),(MA,ma),angle = cv.fitEllipse(max_area_contour)
+        cv.circle(img, leftmost, 5, (0, 0, 0), 2)
+        cv.circle(img, rightmost, 5, (0, 0, 0), 2)
+        cv.circle(img, topmost, 5, (0, 0, 0), 2)
+        cv.circle(img, bottommost, 5, (0, 0, 0), 2)
 
-            largestDistance = 0
-            if findDistance(leftmost[0], leftmost[1], cX, cY) > largestDistance:
-                largestDistance = findDistance(leftmost[0], leftmost[1], cX, cY)
-                tipOfCone = leftmost
-            if findDistance(rightmost[0], rightmost[1], cX, cY) > largestDistance:
-                largestDistance = findDistance(rightmost[0], rightmost[1], cX, cY)
-                tipOfCone = rightmost
-            if findDistance(topmost[0], topmost[1], cX, cY) > largestDistance:
-                largestDistance = findDistance(topmost[0], topmost[1], cX, cY)
-                tipOfCone = topmost
-            if findDistance(bottommost[0], bottommost[1], cX, cY) > largestDistance:
-                largestDistance = findDistance(bottommost[0], bottommost[1], cX, cY)
-                tipOfCone = bottommost
-                
-            if tipOfCone[0] > cX:
-                invert_angle = True
-            else:
-                invert_angle = False
-                
+        (x,y),(MA,ma),angle = cv.fitEllipse(max_area_contour)
 
-            # count = 0
-            # if leftmost[1] > cY:
-            #     count += 1
-            # if rightmost[1] > cY:
-            #     count += 1
-            # if topmost[1] > cY:
-            #     count += 1
-            # if bottommost[1] > cY:
-            #     count += 1
-
-            # if previous_angle is not None:
-            #     if angle - previous_angle > 90: # jumping from 0 to 180 degrees
-            #         if count > 2: # cone tip pointing down
-            #             invert_angle = True
-            #         else: # cone tip pointing up
-            #             invert_angle = False
-            #     elif angle - previous_angle < -90: # jumping from 180 to 0 degrees
-            #         if count > 2: # cone tip pointing down
-            #             invert_angle = False
-            #         else: # cone tip pointing up
-            #             invert_angle = True
-
-            # previous_angle = angle
-
-            if invert_angle:
-                angle += 180
+        largestDistance = 0
+        if findDistance(leftmost[0], leftmost[1], cX, cY) > largestDistance:
+            largestDistance = findDistance(leftmost[0], leftmost[1], cX, cY)
+            tipOfCone = leftmost
+        if findDistance(rightmost[0], rightmost[1], cX, cY) > largestDistance:
+            largestDistance = findDistance(rightmost[0], rightmost[1], cX, cY)
+            tipOfCone = rightmost
+        if findDistance(topmost[0], topmost[1], cX, cY) > largestDistance:
+            largestDistance = findDistance(topmost[0], topmost[1], cX, cY)
+            tipOfCone = topmost
+        if findDistance(bottommost[0], bottommost[1], cX, cY) > largestDistance:
+            largestDistance = findDistance(bottommost[0], bottommost[1], cX, cY)
+            tipOfCone = bottommost
             
-            print(angle)
+        if tipOfCone[0] > cX:
+            invert_angle = True
+        else:
+            invert_angle = False
+            
+
+        # count = 0
+        # if leftmost[1] > cY:
+        #     count += 1
+        # if rightmost[1] > cY:
+        #     count += 1
+        # if topmost[1] > cY:
+        #     count += 1
+        # if bottommost[1] > cY:
+        #     count += 1
+
+        # if previous_angle is not None:
+        #     if angle - previous_angle > 90: # jumping from 0 to 180 degrees
+        #         if count > 2: # cone tip pointing down
+        #             invert_angle = True
+        #         else: # cone tip pointing up
+        #             invert_angle = False
+        #     elif angle - previous_angle < -90: # jumping from 180 to 0 degrees
+        #         if count > 2: # cone tip pointing down
+        #             invert_angle = False
+        #         else: # cone tip pointing up
+        #             invert_angle = True
+
+        # previous_angle = angle
+
+        if invert_angle:
+            angle += 180
+        
+        print(angle)
 
 
     cv.imshow('Output Image', img)
