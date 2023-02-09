@@ -93,6 +93,8 @@ while True:
                 
             if tipOfCone[0] > cX:
                 invert_angle = True
+            else:
+                invert_angle = False
                 
 
             # count = 0
