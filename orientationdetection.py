@@ -13,9 +13,9 @@ def returnOrientation(angle): # return true if angle is within upright range
         return False
         # return False
 
-cap = cv.VideoCapture(1 + cv.CAP_DSHOW)
+cap = cv.VideoCapture(0)
  
-lower_threshold = np.array([15, 0, 120])   # determined experimentally
+lower_threshold = np.array([15, 120, 120])   # determined experimentally
 upper_threshold = np.array([31, 255, 255])   # determined experimentally
 
 invert_angle = False
@@ -93,6 +93,8 @@ while True:
                 
             if tipOfCone[0] > cX:
                 invert_angle = True
+            else:
+                invert_angle = False
                 
 
             # count = 0
