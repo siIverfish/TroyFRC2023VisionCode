@@ -1,5 +1,5 @@
 import cv2 as cv
-from math import atan2, cos, sin, sqrt, pi
+from math import atan2, cos, sin, sqrt, pi, pow
 import numpy as np
  
 DELTAVALUE = 20 # variation for how wide the angle "upright" can be, in each direction
@@ -20,6 +20,9 @@ upper_threshold = np.array([31, 255, 255])   # determined experimentally
 
 invert_angle = False
 previous_angle = None
+
+def findDistance(x1, y1, x2, y2):
+    return pow(pow((x1 - x2), 2) + pow((y1 - y2), 2), 1/2)
 
 while True:
     # Load the image
@@ -74,32 +77,53 @@ while True:
 
             (x,y),(MA,ma),angle = cv.fitEllipse(max_area_contour)
 
-            count = 0
-            if leftmost[1] > cY:
-                count += 1
-            if rightmost[1] > cY:
-                count += 1
-            if topmost[1] > cY:
-                count += 1
-            if bottommost[1] > cY:
-                count += 1
+            largestDistance = 0
+            if findDistance(leftmost[0], leftmost[1], cX, cY) > largestDistance:
+                largestDistance = findDistance(leftmost[0], leftmost[1], cX, cY)
+                tipOfCone = leftmost
+            if findDistance(rightmost[0], rightmost[1], cX, cY) > largestDistance:
+                largestDistance = findDistance(rightmost[0], rightmost[1], cX, cY)
+                tipOfCone = rightmost
+            if findDistance(topmost[0], topmost[1], cX, cY) > largestDistance:
+                largestDistance = findDistance(topmost[0], topmost[1], cX, cY)
+                tipOfCone = topmost
+            if findDistance(bottommost[0], bottommost[1], cX, cY) > largestDistance:
+                largestDistance = findDistance(bottommost[0], bottommost[1], cX, cY)
+                tipOfCone = bottommost
+                
+            if tipOfCone[0] > cX:
+                invert_angle = True
+                
 
-            if previous_angle is None or angle - previous_angle > 90: # jumping from 0 to 180 degrees
-                if count > 2: # cone tip pointing down
-                    invert_angle = True
-                else: # cone tip pointing up
-                    invert_angle = False
-            elif angle - previous_angle < -90: # jumping from 180 to 0 degrees
-                if count > 2: # cone tip pointing down
-                    invert_angle = False
-                else: # cone tip pointing up
-                    invert_angle = True
+            # count = 0
+            # if leftmost[1] > cY:
+            #     count += 1
+            # if rightmost[1] > cY:
+            #     count += 1
+            # if topmost[1] > cY:
+            #     count += 1
+            # if bottommost[1] > cY:
+            #     count += 1
 
-            previous_angle = angle
+            # if previous_angle is not None:
+            #     if angle - previous_angle > 90: # jumping from 0 to 180 degrees
+            #         if count > 2: # cone tip pointing down
+            #             invert_angle = True
+            #         else: # cone tip pointing up
+            #             invert_angle = False
+            #     elif angle - previous_angle < -90: # jumping from 180 to 0 degrees
+            #         if count > 2: # cone tip pointing down
+            #             invert_angle = False
+            #         else: # cone tip pointing up
+            #             invert_angle = True
+
+            # previous_angle = angle
 
             if invert_angle:
                 angle += 180
-            print (angle)
+            
+            print(angle)
+
 
     cv.imshow('Output Image', img)
     #cv.imshow('Noise Reduction', noise_reduction)

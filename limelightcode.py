@@ -74,7 +74,7 @@ def runPipeline(image, llrobot):
                 if angle - previous_angle > 90: # jumping from 0 to 180 degrees
                     if count > 2: # cone tip pointing down
                         invert_angle = True
-                    else: # cone tip pointing up
+                    else: # cone tip pointing ups
                         invert_angle = False
                 elif angle - previous_angle < -90: # jumping from 180 to 0 degrees
                     if count > 2: # cone tip pointing down
