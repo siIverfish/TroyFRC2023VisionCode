@@ -5,6 +5,8 @@ import numpy as np
 invert_angle = False
 previous_angle = None
 
+
+
 def runPipeline(image, llrobot):
     global invert_angle
     global previous_angle

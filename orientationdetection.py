@@ -24,17 +24,17 @@ previous_angle = None
 def findDistance(x1, y1, x2, y2):
     return pow(pow((x1 - x2), 2) + pow((y1 - y2), 2), 1/2)
 
-while True:
+def load_image():
     # Load the image
-    ret, img = cap.read()
+    _, img = cap.read()
 
     # Was the image there?
     if img is None:
         print("Error: File not found")
         exit(0)
+    return img
 
-    #cv.imshow('Input Image', img)
-
+def reduce_noise(img):
     # convert image to HSV
     hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
 
@@ -43,18 +43,14 @@ while True:
     noise_reduction = cv.erode(thresh, np.ones((10, 10), np.uint8), iterations = 1)
     noise_reduction = cv.blur(thresh,(15,15))
     noise_reduction = cv.inRange(noise_reduction, 169, 255)
-    
-    # Find all the contours in the thresholded image
-    contours, _ = cv.findContours(noise_reduction, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
+    return noise_reduction
 
-    # make this if not indent everything
-    if len(contours) == 0:
-        cv.imshow('Output Image', img)
-        #cv.imshow('Noise Reduction', noise_reduction)
-        if cv.waitKey(1) & 0xFF == ord('q'):
-            break
-        continue
+def output(image):
+    cv.imshow('Output Image', image)
+    if cv.waitKey(1) & 0xFF == ord('q'):
+        exit(0)
 
+def get_maximum_contour(contours):
     max_area_contour = contours[0]
     for i, c in enumerate(contours):
         area = cv.contourArea(c)
@@ -64,80 +60,66 @@ while True:
 
         if area > cv.contourArea(max_area_contour):
             max_area_contour = c
+    return max_area_contour
+
+while True:
+    img = load_image()
+    noise_reduction = reduce_noise(img)
+    # Find all the contours in the thresholded image
+    contours, _ = cv.findContours(noise_reduction, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
+
+    # stop if no contours are found
+    if len(contours) == 0:
+        output(img)
+        continue
+
+    max_area_contour = get_maximum_contour(contours)
 
     M = cv.moments(max_area_contour)
-    if not M['m00'] == 0:
-        cX = int(M["m10"] / M["m00"])
-        cY = int(M["m01"] / M["m00"])
-        # draw the contour and center of the shape on the image
-        cv.circle(img, (cX, cY), 7, (0, 0, 0), -1)
 
-        leftmost = tuple(max_area_contour[max_area_contour[:,:,0].argmin()][0])
-        rightmost = tuple(max_area_contour[max_area_contour[:,:,0].argmax()][0])
-        topmost = tuple(max_area_contour[max_area_contour[:,:,1].argmin()][0])
-        bottommost = tuple(max_area_contour[max_area_contour[:,:,1].argmax()][0])
+    # stop if the first moment is 0 ?
+    if M['m00'] == 0:
+        output(img)
+        continue
 
-        cv.circle(img, leftmost, 5, (0, 0, 0), 2)
-        cv.circle(img, rightmost, 5, (0, 0, 0), 2)
-        cv.circle(img, topmost, 5, (0, 0, 0), 2)
-        cv.circle(img, bottommost, 5, (0, 0, 0), 2)
+    center_x = int(M["m10"] / M["m00"])
+    center_y = int(M["m01"] / M["m00"])
 
-        (x,y),(MA,ma),angle = cv.fitEllipse(max_area_contour)
+    # draw the contour and center of the shape on the image
+    cv.circle(img, (center_x, center_y), 7, (0, 0, 0), -1)
 
-        largestDistance = 0
-        if findDistance(leftmost[0], leftmost[1], cX, cY) > largestDistance:
-            largestDistance = findDistance(leftmost[0], leftmost[1], cX, cY)
-            tipOfCone = leftmost
-        if findDistance(rightmost[0], rightmost[1], cX, cY) > largestDistance:
-            largestDistance = findDistance(rightmost[0], rightmost[1], cX, cY)
-            tipOfCone = rightmost
-        if findDistance(topmost[0], topmost[1], cX, cY) > largestDistance:
-            largestDistance = findDistance(topmost[0], topmost[1], cX, cY)
-            tipOfCone = topmost
-        if findDistance(bottommost[0], bottommost[1], cX, cY) > largestDistance:
-            largestDistance = findDistance(bottommost[0], bottommost[1], cX, cY)
-            tipOfCone = bottommost
-            
-        if tipOfCone[0] > cX:
-            invert_angle = True
-        else:
-            invert_angle = False
-            
+    # someone make a comment to explain this
+    leftmost   = tuple(max_area_contour[max_area_contour[:,:,0].argmin()][0])
+    rightmost  = tuple(max_area_contour[max_area_contour[:,:,0].argmax()][0])
+    topmost    = tuple(max_area_contour[max_area_contour[:,:,1].argmin()][0])
+    bottommost = tuple(max_area_contour[max_area_contour[:,:,1].argmax()][0])
 
-        # count = 0
-        # if leftmost[1] > cY:
-        #     count += 1
-        # if rightmost[1] > cY:
-        #     count += 1
-        # if topmost[1] > cY:
-        #     count += 1
-        # if bottommost[1] > cY:
-        #     count += 1
+    # draws nice circles for the nice output image
+    for point in [leftmost, rightmost, topmost, bottommost]:
+        cv.circle(img, point, 5, (0, 0, 0), 2)
 
-        # if previous_angle is not None:
-        #     if angle - previous_angle > 90: # jumping from 0 to 180 degrees
-        #         if count > 2: # cone tip pointing down
-        #             invert_angle = True
-        #         else: # cone tip pointing up
-        #             invert_angle = False
-        #     elif angle - previous_angle < -90: # jumping from 180 to 0 degrees
-        #         if count > 2: # cone tip pointing down
-        #             invert_angle = False
-        #         else: # cone tip pointing up
-        #             invert_angle = True
+    (x,y),(MA,ma),angle = cv.fitEllipse(max_area_contour)
 
-        # previous_angle = angle
+    largestDistance = -1
+    for point in [leftmost, rightmost, topmost, bottommost]:
+        # if the distance is the new maximum
+        if findDistance(point[0], point[1], center_x, center_y) > largestDistance:
+            # set the new maximum
+            largestDistance = findDistance(point[0], point[1], center_x, center_y)
+            tipOfCone = point
+    
+    # if the top of the cone is to the right of the center ?
+    if tipOfCone[0] > center_x:
+        invert_angle = True
+    else:
+        invert_angle = False
 
-        if invert_angle:
-            angle += 180
-        
-        print(angle)
-
-
-    cv.imshow('Output Image', img)
-    #cv.imshow('Noise Reduction', noise_reduction)
-    if cv.waitKey(1) & 0xFF == ord('q'):
-        break
+    # inverts the angle
+    if invert_angle:
+        angle += 180
+    
+    print(angle)
+    output(img)
   
 # Save the output image to the current directory
 # cv.imwrite("output_img.jpg", img)
