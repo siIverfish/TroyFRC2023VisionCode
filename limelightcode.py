@@ -5,51 +5,18 @@ import numpy as np
 invert_angle = False
 previous_angle = None
 
-def reduce_noise(img):
-    # convert image to HSV
-    hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
-
-    # convert the hsv image to binary image + noise reduction
-    thresh = cv.inRange(hsv, lower_threshold, upper_threshold)
-    noise_reduction = cv.erode(thresh, np.ones((10, 10), np.uint8), iterations = 1)
-    noise_reduction = cv.blur(thresh,(15,15))
-    noise_reduction = cv.inRange(noise_reduction, 169, 255)
-    return noise_reduction
-
-previous_angle = None
-invert_angle = False
-
-def should_invert(angle, count):
-    global previous_angle, invert_angle
-
-    if not previous_angle:
-        previous_angle = angle
-        return False
-
-    if angle - previous_angle > 90: # jumping from 0 to 180 degrees
-        if count > 2: # cone tip pointing down
-            return True
-        else: # cone tip pointing ups
-            return False
-    elif angle - previous_angle < -90: # jumping from 180 to 0 degrees
-        if count > 2: # cone tip pointing down
-            return False
-        else: # cone tip pointing up
-            return True
+from common import reduce_noise, should_invert
 
 def runPipeline(image, llrobot):
-    global invert_angle
-    global previous_angle
-    
     #constants for code
-    lower_threshold = np.array([15, 0, 120])   # determined experimentally
-    upper_threshold = np.array([31, 255, 255])   # determined experimentally
+    lower_threshold = np.array([15, 0, 120])    # determined experimentally
+    upper_threshold = np.array([31, 255, 255])  # determined experimentally
 
     #initialize variables in case they return nothing
     max_area_contour = np.array([[]])
     llpython = [0,0,0]
 
-    noise_reduction = reduce_noise(image)
+    noise_reduction = reduce_noise(image, lower_threshold, upper_threshold)
     
     # Find all the contours in the thresholded image
     contours, _ = cv.findContours(noise_reduction, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
@@ -78,6 +45,7 @@ def runPipeline(image, llrobot):
 
     llpython[1] = cX
     llpython[2] = cY
+    
     # draw the contour and center of the shape on the image
     cv.circle(image, (cX, cY), 7, (0, 0, 0), -1)
 
