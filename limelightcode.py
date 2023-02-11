@@ -43,8 +43,14 @@ def runPipeline(image, llrobot):
         if not M['m00'] == 0 and len(max_area_contour) > 5:
             cX = int(M["m10"] / M["m00"])
             cY = int(M["m01"] / M["m00"])
-            llpython[1] = cX
-            llpython[2] = cY
+
+            x_res = 720 #determine later
+            y_res = 480 #determine later
+            center_coord = np.array([x_res/2, y_res/2])
+
+            llpython[1] = cX - center_coord[0] # x error
+            llpython[2] = center_coord[0] - cY # y error
+            
             # draw the contour and center of the shape on the image
             cv.circle(image, (cX, cY), 7, (0, 0, 0), -1)
 
