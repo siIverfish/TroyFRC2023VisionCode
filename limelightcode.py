@@ -44,12 +44,8 @@ def runPipeline(image, llrobot):
             cX = int(M["m10"] / M["m00"])
             cY = int(M["m01"] / M["m00"])
 
-            x_res = 720 #determine later
-            y_res = 480 #determine later
-            center_coord = np.array([x_res/2, y_res/2])
-
-            llpython[1] = cX - center_coord[0] # x error
-            llpython[2] = center_coord[0] - cY # y error
+            llpython[1] = cX
+            llpython[2] = cY
             llpython[3] = M['m00'] # area
             
             # draw the contour and center of the shape on the image
