@@ -2,7 +2,27 @@ import cv2 as cv
 import numpy as np
 
 
+def infinite_frame_stream():
+    """
+    Returns a generator that yields frames from the webcam.
+    Also exits the program if the user presses 'q' and waits between frames.
+    """
+    cap = cv.VideoCapture(1 + cv.CAP_DSHOW)
+    while True:
+        _, frame = cap.read()
+        if frame is None:
+            print("Error reading frame")
+            exit(1)
+        yield frame
+        if cv.waitKey(1) & 0xFF == ord('q'):
+            exit(0)
+
 def reduce_noise(img, lower_threshold, upper_threshold):
+    """
+    This function does most of the heavy lifting for object detection.
+    It returns a binary image with the object of interest (between lower & upper threshold) in 
+    white and the rest in black.
+    """
     # convert image to HSV
     hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
 
@@ -19,6 +39,9 @@ previous_angle = None
 invert_angle = False
 
 def should_invert(angle, count):
+    """
+    Inverts the angle sometimes?
+    """
     global previous_angle, invert_angle
 
     if not previous_angle:
@@ -38,17 +61,29 @@ def should_invert(angle, count):
 
 
 def maximum_contour(contours):
+    """
+    Returns the contour with the largest area in the list of contours.
+    """
     return max(
-        (c for c in contours if 1000 < c < 30_000),
-        key=cv.contourArea
+        contour for contour in contours \
+        if 1_000 < cv.contourArea(contour) < 300_000
     )
 
-
 def maximum_contour_center(contours):
+    """
+    Returns the center of the contour with the largest area in the list of contours.
+    """
     M = cv.moments(maximum_contour(contours))
 
     center_x = int(M["m10"] / M["m00"])
     center_y = int(M["m01"] / M["m00"])
 
     return np.array(center_x, center_y)
+
+
+# kinda long name 
+def escape_if_user_exits():
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        exit(0)
+
 
