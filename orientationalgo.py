@@ -33,11 +33,8 @@ def runPipeline(image, llrobot):
     max_area_contour = np.array([[]])
     llpython = [0,0,0]
 
-    # convert image to HSV
-    hsv = cv.cvtColor(image, cv.COLOR_BGR2HSV)
-
-    # convert the hsv image to binary image + noise reduction
-    noise_reduction = reduce_noise(hsv)
+    # convert the image to binary image + noise reduction
+    noise_reduction = reduce_noise(image)
     
     # Find all the contours in the thresholded image
     contours, _ = cv.findContours(noise_reduction, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
