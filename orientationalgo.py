@@ -3,25 +3,7 @@ from math import atan2, cos, sin, sqrt, pi
 import numpy as np
 import math
 
-
-
-def reduce_noise(img):
-    # convert image to HSV
-    hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
-
-    # convert the hsv image to binary image + noise reduction
-    thresh = cv.inRange(hsv, lower_threshold, upper_threshold)
-    noise_reduction = cv.erode(thresh, np.ones((10, 10), np.uint8), iterations = 1)
-    noise_reduction = cv.blur(thresh,(15,15))
-    noise_reduction = cv.inRange(noise_reduction, 169, 255)
-    return noise_reduction
-
-
-def get_maximum_contour(contours):
-    return max(
-        contour for contour in contours \
-        if cv.contourArea(contour) > 1000 and cv.contourArea(contour) < 300000
-    )
+from common import reduce_noise, maximum_contour
 
 
 def runPipeline(image, llrobot):
@@ -34,7 +16,7 @@ def runPipeline(image, llrobot):
     llpython = [0,0,0]
 
     # convert the image to binary image + noise reduction
-    noise_reduction = reduce_noise(image)
+    noise_reduction = reduce_noise(image, lower_threshold, upper_threshold)
     
     # Find all the contours in the thresholded image
     contours, _ = cv.findContours(noise_reduction, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
@@ -42,7 +24,7 @@ def runPipeline(image, llrobot):
     if len(contours) == 0:
         return max_area_contour,image,llpython
 
-    max_area_contour = get_maximum_contour(contours)
+    max_area_contour = maximum_contour(contours)
 
     M = cv.moments(max_area_contour)
 
@@ -78,7 +60,7 @@ def runPipeline(image, llrobot):
     count_top = sum(
         1 for point in max_area_contour \
         if point[0] * slope < point[1]
-        )
+    )
     
     # the bottom is the opposite of the top
     count_bottom = len(max_area_contour) - count_top

@@ -1,90 +1,57 @@
-import cv2
+import cv2 as cv
 import numpy as np
-# import time
 
-cube = False 
-cap = cv2.VideoCapture(1+cv2.CAP_DSHOW)
+from common import (
+    reduce_noise,
+    maximum_contour_center,
+    infinite_frame_stream,
+)
 
-x_res = 720 #determine later
-y_res = 480 #determine later
+CUBE = False
 
-center_coord = np.array([x_res/2, y_res/2])
+class Threshold:
+    """
+    Holds the lower and upper threshold color values for the objects.
+    If the RGB values of a pixel are within these bounds, it will be
+    considered part of the object.
+    """
+
+    class Cone:
+        "The lower and upper bounds for the cone"
+        LOWER = np.array([18, 44, 101])   # determined experimentally
+        UPPER = np.array([31, 232, 255])   # determined experimentally
+
+    class Cube:
+        "The lower and upper bounds for the cube"
+        LOWER = np.array([118,87,86]) 
+        UPPER = np.array([133,255,255])
 
 
-def reduce_noise(img, lower_threshold, upper_threshold):
-    # convert image to HSV
-    hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
-
-    # convert the hsv image to binary image + noise reduction
-    thresh = cv.inRange(hsv, lower_threshold, upper_threshold)
-    noise_reduction = cv.erode(thresh, np.ones((10, 10), np.uint8), iterations = 1)
-    noise_reduction = cv.blur(thresh,(15,15))
-    noise_reduction = cv.inRange(noise_reduction, 169, 255)
-    return noise_reduction
-
-
-def maximum_contour_center(contours):
-    center = np.zeros(2)
-    for c in contours:
-            # calculate moments for each contour
-            M = cv2.moments(c)
-
-            # calculate x,y coordinate of center
-            if M["m00"] == 0:
-                continue
-            
-            # calculate area of contour
-            if(M['m00'] > max_area):
-                max_area = M['m00']
-                center_x = int(M["m10"] / M["m00"])
-                center_y = int(M["m01"] / M["m00"])
-                center[0] = center_x
-                center[1] = center_y
-    return center
-
-# kinda long name 
-def escape_if_user_exits():
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        exit(0)
-
-def process_cube():
-    lower_threshold = np.array([118,87,86]) 
-    upper_threshold = np.array([133,255,255])
-    while True:
-        _, frame = cap.read()
-        noise_reduction = reduce_noise(frame, lower_threshold, upper_threshold)
-
-        contours, _ = cv2.findContours(noise_reduction,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        center = maximum_contour_center(contours)
-        
-        cv2.circle(frame, (int(center[0]), int(center[1])), 5, (255, 255, 255), -1)
-
-        cv2.imshow('frame', frame)
-        cv2.imshow('noise_reduction', noise_reduction)
-
-        escape_if_user_exits()
-
-# I think this is for cones
-def process_cone():
-    lower_threshold = np.array([18, 44, 101])   # determined experimentally
-    upper_threshold = np.array([31, 232, 255])   # determined experimentally
-    while True:
-        # getting video frame
-        _, frame = cap.read()
-        noise_reduction = reduce_noise(frame, lower_threshold, upper_threshold)
+def process_object(threshold):
+    """
+    Gets the center of the object from the camera feed.
+    """
+    for frame in infinite_frame_stream():
+        noise_reduction = reduce_noise(frame, threshold.LOWER, threshold.UPPER)
         
         # calculate x,y coordinate of center
-        contours,_ = cv2.findContours(noise_reduction,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        contours,_ = cv.findContours(noise_reduction, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 
         center = maximum_contour_center(contours)
         
-        cv2.circle(frame, (int(center[0]), int(center[1])), 5, (255, 255, 255), -1)
-        cv2.imshow("result",noise_reduction)
-        cv2.imshow("normal",frame)
+        cv.circle(frame, (int(center[0]), int(center[1])), 5, (255, 255, 255), -1)
 
-        escape_if_user_exits()
+        cv.imshow("frame", frame)
+        cv.imshow("noise_reduction", noise_reduction)
 
-if cube:
-    process_cube()
-else:
-    process_cone()
+def main():
+    """
+    Processes the object based on the value of CUBE.
+    """
+    if CUBE:
+        process_object(Threshold.Cube)
+    else:
+        process_object(Threshold.Cone)
+
+if __name__ == "__main__":
+    main()
