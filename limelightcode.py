@@ -13,7 +13,6 @@ def runPipeline(image, llrobot):
     upper_threshold = np.array([31, 255, 255])  # determined experimentally
 
     #initialize variables in case they return nothing
-    max_area_contour = np.array([[]])
     llpython = [0,0,0]
 
     noise_reduction = reduce_noise(image, lower_threshold, upper_threshold)
@@ -22,7 +21,7 @@ def runPipeline(image, llrobot):
     contours, _ = cv.findContours(noise_reduction, cv.RETR_LIST, cv.CHAIN_APPROX_NONE)
 
     if len(contours) == 0:
-        return max_area_contour,image,llpython
+        return np.array([[]]),image,llpython
 
     max_area_contour = maximum_contour(contours)
     M = cv.moments(max_area_contour)

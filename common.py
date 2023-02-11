@@ -11,6 +11,7 @@ def reduce_noise(img, lower_threshold, upper_threshold):
     noise_reduction = cv.erode(thresh, np.ones((10, 10), np.uint8), iterations = 1)
     noise_reduction = cv.blur(thresh,(15,15))
     noise_reduction = cv.inRange(noise_reduction, 169, 255)
+    cv.imshow("noise_reduction", noise_reduction)
     return noise_reduction
 
 
