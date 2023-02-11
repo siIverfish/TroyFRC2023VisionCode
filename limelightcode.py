@@ -14,7 +14,7 @@ def runPipeline(image, llrobot):
 
     #initialize variables in case they return nothing
     max_area_contour = np.array([[]])
-    llpython = [0,0,0]
+    llpython = [0,0,0,0]
 
     # convert image to HSV
     hsv = cv.cvtColor(image, cv.COLOR_BGR2HSV)
@@ -50,6 +50,7 @@ def runPipeline(image, llrobot):
 
             llpython[1] = cX - center_coord[0] # x error
             llpython[2] = center_coord[0] - cY # y error
+            llpython[4] = M['m00'] # area
             
             # draw the contour and center of the shape on the image
             cv.circle(image, (cX, cY), 7, (0, 0, 0), -1)
