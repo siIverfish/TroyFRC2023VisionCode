@@ -1,13 +1,9 @@
 import cv2 as cv
 from math import atan2, cos, sin, sqrt, pi
 import numpy as np
-
-invert_angle = False
-previous_angle = None
+import math
 
 def runPipeline(image, llrobot):
-    global invert_angle
-    global previous_angle
     #constants for code
     lower_threshold = np.array([15, 0, 120])   # determined experimentally
     upper_threshold = np.array([31, 255, 255])   # determined experimentally
@@ -43,14 +39,8 @@ def runPipeline(image, llrobot):
         if not M['m00'] == 0 and len(max_area_contour) > 5:
             cX = int(M["m10"] / M["m00"])
             cY = int(M["m01"] / M["m00"])
-
-            x_res = 720 #determine later
-            y_res = 480 #determine later
-            center_coord = np.array([x_res/2, y_res/2])
-
-            llpython[1] = cX - center_coord[0] # x error
-            llpython[2] = center_coord[0] - cY # y error
-            
+            llpython[1] = cX
+            llpython[2] = cY
             # draw the contour and center of the shape on the image
             cv.circle(image, (cX, cY), 7, (0, 0, 0), -1)
 
@@ -66,32 +56,26 @@ def runPipeline(image, llrobot):
 
             (x,y),(MA,ma),angle = cv.fitEllipse(max_area_contour)
 
-            count = 0
-            if leftmost[1] > cY:
-                count += 1
-            if rightmost[1] > cY:
-                count += 1
-            if topmost[1] > cY:
-                count += 1
-            if bottommost[1] > cY:
-                count += 1
-                
-            if previous_angle is not None:
-                if angle - previous_angle > 90: # jumping from 0 to 180 degrees
-                    if count > 2: # cone tip pointing down
-                        invert_angle = True
-                    else: # cone tip pointing ups
-                        invert_angle = False
-                elif angle - previous_angle < -90: # jumping from 180 to 0 degrees
-                    if count > 2: # cone tip pointing down
-                        invert_angle = False
-                    else: # cone tip pointing up
-                        invert_angle = True
+            slope = math.atan(angle + 90) # I have no idea what I'm doing
+            countTop,countBottom = 0
+            if leftmost[0] * slope >= leftmost[1]:
+                countBottom += 1
+            else:
+                countTop += 1
+            if rightmost[0] * slope >= rightmost[1]:
+                countBottom += 1
+            else:
+                countTop += 1
+            if topmost[0] * slope >= topmost[1]:
+                countBottom += 1
+            else:
+                countTop += 1
+            if bottommost[0] * slope >= bottommost[1]:
+                countBottom += 1
+            else:
+                countTop += 1
 
-            previous_angle = angle
-
-            if invert_angle:
-                angle += 180
+            print(countTop, countBottom)
 
             image = cv.putText(image, str(round(angle)), (50,50), cv.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2, cv.LINE_AA)    
             llpython[0] = angle
