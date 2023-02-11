@@ -11,27 +11,6 @@ y_res = 480 #determine later
 center_coord = np.array([x_res/2, y_res/2])
 
 
-"""
-cond = threading.Condition()
-notified = [False]
-
-def connectionListener(connected, info):
-    #print(info, '; Connected=%s' % connected)
-    with cond:
-        notified[0] = True
-        cond.notify()
-
-NetworkTables.initialize(server='10.39.52.2')
-NetworkTables.addConnectionListener(connectionListener, immediateNotify=True)
-
-#waits for Network Tables
-with cond:
-    print("Waiting")
-    if not notified[0]:
-        cond.wait()
-#get the table
-vision_nt = NetworkTables.getTable('Vision')
-"""
 
 if cube:
     lower_threshold_cube = np.array([118,87,86])
@@ -39,14 +18,12 @@ if cube:
     while True:
         startTime = time.time()
         ret, frame = cap.read()
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        thresh = cv2.inRange(hsv, lower_threshold_cube, upper_threshold_cube)
-        noise_reduction = cv2.blur(thresh,(20,20))
-        noise_reduction = cv2.inRange(noise_reduction, 1, 75)
-        noise_reduction = cv2.erode(thresh, np.ones((10, 10), np.uint8), iterations = 1)
+
+        noise_reduction = reduce_noise(frame)
+
         M = cv2.moments(noise_reduction)
 
-        contours, hierarchy = cv2.findContours(noise_reduction,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(noise_reduction,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         max_index = 0
         max_area = 0
         coord = np.zeros(2)
@@ -89,14 +66,7 @@ else:
         # getting video frame
         ret, frame = cap.read()
 
-        #convert image to HSV
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        
-        # convert the hsv image to binary image + noise reduction
-        thresh = cv2.inRange(hsv, lower_threshold, upper_threshold)
-        noise_reduction = cv2.blur(thresh,(20,20))
-        noise_reduction = cv2.inRange(noise_reduction, 1, 75)
-        noise_reduction = cv2.erode(thresh, np.ones((10, 10), np.uint8), iterations = 1)
+        noise_reduction = reduce_noise(frame)
 
         # calculate moments of binary image
         M = cv2.moments(thresh)
@@ -122,11 +92,6 @@ else:
                     max_index = i
         
         cv2.circle(frame, (int(coord[0]), int(coord[1])), 5, (255, 255, 255), -1)
-        """
-        vision_nt.putNumber('xError', coord[0] - center_coord[0])
-        vision_nt.putNumber('yError', center_coord[1] - coord[1])
-        vision_nt.putNumber('area', M['m00'])
-        """
         cv2.imshow("result",noise_reduction)
         cv2.imshow("normal",frame)
         #cv2.imshow("normal2",noise_reduction)
