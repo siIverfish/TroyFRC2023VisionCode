@@ -1,11 +1,11 @@
 import cv2 as cv
-from math import atan2, cos, sin, sqrt, pi
 import numpy as np
+
+from common import reduce_noise, should_invert, maximum_contour
 
 invert_angle = False
 previous_angle = None
 
-from common import reduce_noise, should_invert
 
 def runPipeline(image, llrobot):
     #constants for code
@@ -24,16 +24,7 @@ def runPipeline(image, llrobot):
     if len(contours) == 0:
         return max_area_contour,image,llpython
 
-    max_area_contour = contours[0]
-    for c in contours:
-        area = cv.contourArea(c)
-        # Ignore contours that are too small or too large
-        if area < 1000 or 300000 < area:
-            continue
-
-        if area > cv.contourArea(max_area_contour):
-            max_area_contour = c
-
+    max_area_contour = maximum_contour(contours)
     M = cv.moments(max_area_contour)
 
     # premature return if stuff is wrong
@@ -45,7 +36,7 @@ def runPipeline(image, llrobot):
 
     llpython[1] = cX
     llpython[2] = cY
-    
+
     # draw the contour and center of the shape on the image
     cv.circle(image, (cX, cY), 7, (0, 0, 0), -1)
 
@@ -62,7 +53,7 @@ def runPipeline(image, llrobot):
     count = sum(
         1 for point in [leftmost, rightmost, topmost, bottommost] \
         if point[1] > cY
-        )
+    )
 
     if should_invert(angle, count):
         angle += 180
@@ -71,4 +62,4 @@ def runPipeline(image, llrobot):
     llpython[0] = angle
 
     return max_area_contour,image,llpython
-  
+

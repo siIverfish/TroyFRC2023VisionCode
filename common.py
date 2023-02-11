@@ -1,4 +1,6 @@
 import cv2 as cv
+import numpy as np
+
 
 def reduce_noise(img, lower_threshold, upper_threshold):
     # convert image to HSV
@@ -32,3 +34,20 @@ def should_invert(angle, count):
             return False
         else: # cone tip pointing up
             return True
+
+
+def maximum_contour(contours):
+    return max(
+        (c for c in contours if 1000 < c < 30_000),
+        key=cv.contourArea
+    )
+
+
+def maximum_contour_center(contours):
+    M = cv.moments(maximum_contour(contours))
+
+    center_x = int(M["m10"] / M["m00"])
+    center_y = int(M["m01"] / M["m00"])
+
+    return np.array(center_x, center_y)
+
