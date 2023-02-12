@@ -7,7 +7,8 @@ def infinite_frame_stream():
     Returns a generator that yields frames from the webcam.
     Also exits the program if the user presses 'q' and waits between frames.
     """
-    cap = cv.VideoCapture(1 + cv.CAP_DSHOW)
+    # cap = cv.VideoCapture(1 + cv.CAP_DSHOW)
+    cap = cv.VideoCapture(0)
     while True:
         _, frame = cap.read()
         if frame is None:
@@ -24,15 +25,17 @@ def reduce_noise(img, lower_threshold, upper_threshold):
     white and the rest in black.
     """
     # convert image to HSV
-    hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
+    img = cv.cvtColor(img, cv.COLOR_BGR2HSV)
 
     # convert the hsv image to binary image + noise reduction
-    thresh = cv.inRange(hsv, lower_threshold, upper_threshold)
-    noise_reduction = cv.erode(thresh, np.ones((10, 10), np.uint8), iterations = 1)
-    noise_reduction = cv.blur(thresh,(15,15))
-    noise_reduction = cv.inRange(noise_reduction, 169, 255)
-    cv.imshow("noise_reduction", noise_reduction)
-    return noise_reduction
+    # thresh = cv.inRange(hsv, lower_threshold, upper_threshold)
+    img = cv.inRange(img, lower_threshold, upper_threshold)
+
+    img = cv.erode(img, np.ones((10, 10), np.uint8), iterations = 1)
+    img = cv.blur(img,(15,15))
+    img = cv.inRange(img, 169, 255)
+    
+    return img
 
 
 previous_angle = None
@@ -60,25 +63,34 @@ def should_invert(angle, count):
             return True
 
 
-def maximum_contour(contours):
+def get_maximum_contour(contours):
     """
     Returns the contour with the largest area in the list of contours.
     """
-    return max(
+    contours = [
         contour for contour in contours \
         if 1_000 < cv.contourArea(contour) < 300_000
+    ]
+    if len(contours) == 0:
+        return None
+    return max(
+        contours,
+        key=cv.contourArea
     )
 
-def maximum_contour_center(contours):
+def get_maximum_contour_center(contours):
     """
     Returns the center of the contour with the largest area in the list of contours.
     """
-    M = cv.moments(maximum_contour(contours))
+    max_contour = maximum_contour(contours)
+    if max_contour is None:
+        return None
+    M = cv.moments(max_contour)
 
     center_x = int(M["m10"] / M["m00"])
     center_y = int(M["m01"] / M["m00"])
-
-    return np.array(center_x, center_y)
+    
+    return np.array([center_x, center_y])
 
 
 # kinda long name 
