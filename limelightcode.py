@@ -13,7 +13,8 @@ def runPipeline(image, llrobot):
     upper_threshold = np.array([31, 255, 255])  # determined experimentally
 
     #initialize variables in case they return nothing
-    llpython = [0,0,0]
+    max_area_contour = np.array([[]])
+    llpython = [0,0,0,0]
 
     noise_reduction = reduce_noise(image, lower_threshold, upper_threshold)
     
@@ -26,9 +27,16 @@ def runPipeline(image, llrobot):
     max_area_contour = maximum_contour(contours)
     M = cv.moments(max_area_contour)
 
-    # premature return if stuff is wrong
-    if M['m00'] == 0 or len(max_area_contour) <= 5:
-        return max_area_contour,image,llpython
+    if not M['m00'] == 0 and len(max_area_contour) > 5:
+        cX = int(M["m10"] / M["m00"])
+        cY = int(M["m01"] / M["m00"])
+
+        llpython[1] = cX
+        llpython[2] = cY
+        llpython[3] = M['m00'] # area
+        
+        # draw the contour and center of the shape on the image
+        cv.circle(image, (cX, cY), 7, (0, 0, 0), -1)
 
     cX = int(M["m10"] / M["m00"])
     cY = int(M["m01"] / M["m00"])
