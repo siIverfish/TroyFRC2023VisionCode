@@ -89,13 +89,7 @@ def process_object(threshold):
 
 
 def show_text(frame, text):
-    """ 
-    Shows text on the top-left of the frame. Made another function because this looks bad in the main loop. 
-    
-    Args:
-        frame (np.ndarray): The frame to show the text on.
-        text (str): The text to show.
-    """
+    """Shows text on the top-left of the frame. Made another function because this looks bad in the main loop."""
     cv.putText(
         frame,
         text,
@@ -107,13 +101,26 @@ def show_text(frame, text):
     )
 
 
-def main():
-    """The main function. Detects the printed cone in the camera stream."""
-    printed_cone_threshold = Threshold(
-        lower=np.array([8, 44, 101]), upper=np.array([21, 232, 255])
-    )
-    process_object(threshold=printed_cone_threshold)
+cube_threshold = Threshold(
+    lower=np.array([118, 87, 86]),
+    upper=np.array([133, 255, 255]),
+)
 
+cone_threshold = Threshold(
+    lower=np.array([18, 44, 101]),
+    upper=np.array([31, 232, 255]),
+)
+
+# The threshold for the printed picture of the cone I was using for testing
+printed_cone_threshold = Threshold(
+    lower=np.array([8, 44, 101]),
+    upper=np.array([21, 232, 255]),
+)
+
+
+def main():
+    """The main function. Detects the cone in the camera stream."""
+    process_object(threshold=cone_threshold)
 
 if __name__ == "__main__":
     main()
