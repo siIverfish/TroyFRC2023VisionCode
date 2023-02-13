@@ -34,6 +34,11 @@ def get_angle(point1, point2):
     degrees = np.degrees(np.arctan2(point2[1] - point1[1], point2[0] - point1[0]))
     while degrees < 0:
         degrees += 360
+    # Make the degrees negative to make the angle counterclockwise
+    # Resulting in the following:
+    #        90
+    #    180    0
+    #       270
     return -degrees + 360
 
 

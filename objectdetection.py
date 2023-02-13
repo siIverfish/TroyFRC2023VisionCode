@@ -119,7 +119,7 @@ printed_cone_threshold = Threshold(
 
 
 def main():
-    """The main function. Detects the cone in the camera stream."""
+    """ The main function. Detects the cone in the camera stream. """
     process_object(threshold=cone_threshold)
 
 if __name__ == "__main__":
