@@ -57,7 +57,7 @@ def runPipeline(image, llrobot):
             (x,y),(MA,ma),angle = cv.fitEllipse(max_area_contour)
 
             slope = math.atan(angle + 90) # I have no idea what I'm doing
-            countTop,countBottom = 0
+            countTop,countBottom = 0,0
             if leftmost[0] * slope >= leftmost[1]:
                 countBottom += 1
             else:
