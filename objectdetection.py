@@ -3,6 +3,12 @@ Detects objects in the camera stream.
 The main loop could work better, but I don't want to work on finding another threshold.
 
 BTW: I made a docstring for all of the functions, so you can hover over them to see what they do.
+
+For reference:
+
+HSV:           https://www.geeksforgeeks.org/color-spaces-in-opencv-python/
+Thresholding:  https://docs.opencv.org/4.x/d7/d4d/tutorial_py_thresholding.html
+Contours:      https://docs.opencv.org/3.4/d4/d73/tutorial_py_contours_begin.html
 """
 
 from dataclasses import dataclass
@@ -70,8 +76,14 @@ def process_object(threshold):
         # Finds objects in the new binary image, which should be easy because the image is only black and white.
         contours, _ = cv.findContours(processed, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 
+        print(len(contours))
+
         # Gets the largest contour in the image, hopefully the correct object if the threshold is set well.
         largest_object = get_maximum_contour(contours)
+
+        if largest_object is None:
+            fps_counter.count()
+            continue
 
         # Gets the center of the largest contour
         object_center = get_contour_center(largest_object)
@@ -89,7 +101,7 @@ def process_object(threshold):
 
 
 def show_text(frame, text):
-    """Shows text on the top-left of the frame. Made another function because this looks bad in the main loop."""
+    """ Shows text on the top-left of the frame. Made another function because this looks bad in the main loop. """
     cv.putText(
         frame,
         text,
@@ -117,10 +129,15 @@ printed_cone_threshold = Threshold(
     upper=np.array([21, 232, 255]),
 )
 
+# For testing extreme situations
+test_nothing_threshold = Threshold(
+    lower=np.array([3, 45, 200]),
+    upper=np.array([4, 46, 201]),
+)
 
 def main():
-    """The main function. Detects the cone in the camera stream."""
-    process_object(threshold=cone_threshold)
+    """ The main function. Detects the cone in the camera stream. """
+    process_object(threshold=printed_cone_threshold)
 
 if __name__ == "__main__":
     main()
