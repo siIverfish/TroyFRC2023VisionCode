@@ -32,7 +32,12 @@ class Threshold:
 
 
 def generate_starting_threshold(metadatum, path):
-    """Looks at the image's center and generates a threshold around it"""
+    """
+    Looks at the center of the first image in metadatum and generates a threshold around it.
+    Always uses a hue range of HUE_RANGE.
+    
+    TODO: average the all of the center pixels in the list instead.
+    """
     image = cv.imread(f"test_images/{path}/{metadatum['image_name']}")
     color = image[metadatum["center_y"], metadatum["center_x"]]
     return Threshold(
@@ -41,17 +46,14 @@ def generate_starting_threshold(metadatum, path):
     )
 
 
-def load_threshold(path, image_metadata=None):
+def load_threshold(path):
     """Returns the initial threshold to test."""
     save_path = f"test_data/{path}/threshold.json"
     if os.path.isfile(save_path):
         with open(save_path, "r", encoding="utf-8") as f:
             threshold = Threshold.from_json(json.load(f))
     else:
-        if image_metadata is None:
-            raise ValueError("Threshold file does not exist.")
-        else:
-            threshold = generate_starting_threshold(image_metadata[0], path)
+        return None
     ic(threshold)
     return threshold
 

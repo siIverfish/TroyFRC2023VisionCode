@@ -4,6 +4,9 @@ The main loop could work better, but I don't want to work on finding another thr
 
 BTW: I made a docstring for all of the functions, so you can hover over them to see what they do.
 
+If you see ic() in the code, that's just a print statement that I use for debugging.
+ic is like print but better.
+
 For reference:
 
 HSV:           https://www.geeksforgeeks.org/color-spaces-in-opencv-python/

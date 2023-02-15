@@ -18,7 +18,6 @@ class ImageSaver:
         return cls.instance
 
     def __init__(self, folder):
-        ic(folder)
         self.folder = folder
         if not os.path.exists(f"test_images/{self.folder}"):
             os.makedirs(f"test_images/{self.folder}")
