@@ -4,7 +4,8 @@ Loads data from test_images and gets a person to label it.
 Use the --path argument to specify which folder to label.
 e.g. python label_data.py --path cone
 
-First, it will load the data from test_data/<path>/data.json, and then it will load the images from test_images/<path> and label them.
+First, it will load the data from test_data/<path>/data.json, and then it will load the images from test_images/<path>.
+It shows the images one at a time, and the user can double-click on the center of the object in the image and then press `q` to move on to the next image.
 """
 
 import os
