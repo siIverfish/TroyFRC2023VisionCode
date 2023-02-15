@@ -68,7 +68,7 @@ def get_object(image, threshold):
     return largest_object
 
 
-def process_object(threshold):
+def process_object(threshold, only_center):
     """
     Given a threshold, this function will process the camera stream
     and detect the object of interest.
@@ -90,14 +90,16 @@ def process_object(threshold):
         object_angle = get_angle(object_center, farthest_point)
 
         sides = get_sides(largest_object)
-        draw_contour_points(frame, largest_object)
-        draw_contour_points(frame, sides, (0, 0, 255))
 
         # Draws stuff on the frame
-        cv.circle(frame, object_center, 5, (0, 255, 0), -1)
-        cv.circle(frame, farthest_point, 5, (0, 0, 255), -1)
-        cv.line(frame, object_center, farthest_point, (255, 0, 0), 2)
-        show_text(frame, f"Angle: {object_angle:.1f}")
+        cv.circle(frame, object_center, 30, (0, 255, 0), -1)
+        
+        if not only_center:
+            draw_contour_points(frame, largest_object)
+            draw_contour_points(frame, sides, (0, 0, 255))
+            cv.circle(frame, farthest_point, 5, (0, 0, 255), -1)
+            cv.line(frame, object_center, farthest_point, (255, 0, 0), 2)
+            show_text(frame, f"Angle: {object_angle:.1f}")
 
         
         cv.imshow("frame", frame)
@@ -140,6 +142,7 @@ def main():
     # gets the file path from the command line
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--path", type=str)
+    parser.add_argument("-o", "--only-center", action="store_true")
     args = parser.parse_args()
     
     if args.path is None:
@@ -150,7 +153,7 @@ def main():
     else:
         threshold = load_threshold(args.path)
     
-    process_object(threshold=threshold)
+    process_object(threshold=threshold, only_center=args.only_center)
 
 
 if __name__ == "__main__":
