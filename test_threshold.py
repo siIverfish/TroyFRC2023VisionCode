@@ -64,7 +64,10 @@ def rate_threshold(threshold):
         amounts_off.append(abs(center[0] - datum["center_x"]) + abs(center[1] - datum["center_y"]))
         
     # return the median of the amounts off
-    return np.average(amounts_off) + not_found * DID_NOT_FIND_IMAGE_PENALTY
+    score = np.median(amounts_off) + not_found * DID_NOT_FIND_IMAGE_PENALTY
+    if np.isnan(score):
+        return float("inf")
+    return score
 
 
 
@@ -72,6 +75,10 @@ def main():
     """Tests the threshold against the test data."""
     best = load_threshold(args.path, image_metadata)
     best_score = rate_threshold(best)
+    save_threshold(best, args.path)
+    if best_score is np.nan:
+        best_score = float("inf")
+    ic(best_score)
     while True:
         for threshold in generate_test_thresholds(best):
             score = rate_threshold(threshold)
@@ -81,6 +88,7 @@ def main():
                 print(f"New best: {best_score}")
                 ic(threshold)
                 save_threshold(best, args.path)
+            ic(score)
 
 
 if __name__ == "__main__":
