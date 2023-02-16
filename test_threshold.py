@@ -48,17 +48,20 @@ def generate_test_thresholds(base_threshold):
         yield threshold
 
 # load the labeled data
-with open(data_path, "r", encoding="utf-8") as f:
-    image_click_data = json.load(f)
+def load_data(path):
+    with open(f"test_data/{path}/data.json", "r", encoding="utf-8") as f:
+        return json.load(f)
 
-# loads all of the images mentioned in the data
-images = []
-for data in image_click_data:
-    image_name = data["image_name"]
-    images.append(cv.imread(f"test_images/{args.path}/{image_name}"))
+def load_images(image_click_data):
+    # loads all of the images mentioned in the data
+    images = []
+    for data in image_click_data:
+        image_name = data["image_name"]
+        images.append(cv.imread(f"test_images/{args.path}/{image_name}"))
+    return images
 
 
-def rate_threshold(threshold):
+def rate_threshold(threshold, images, image_click_data):
     """
     Returns how many pixels off the threshold gets on average.
     This is used to test randomly generated thresholds for fitness.
@@ -94,6 +97,8 @@ def main():
     Continously generates random thresholds and tests them against the labeled data.
     The best threshold is saved to a file so that it can be used in objectdetection.py.
     """
+    image_click_data = load_data(args.path)
+    images = load_images(image_click_data)
     # loads in the previous best threshold
     best = load_threshold(args.path)
     if best is None:
@@ -102,13 +107,13 @@ def main():
         # Save the threshold so that we don't have to generate it again.
         save_threshold(best, args.path)
     # TODO: we could save the best threshold's score so that we don't have to rate it again.
-    best_score = rate_threshold(best)
+    best_score = rate_threshold(best, images, image_click_data)
     if best_score is np.nan:
         best_score = float("inf")
     while True:
         # generate 5 random thresholds and see which one is the best
         for threshold in generate_test_thresholds(best):
-            score = rate_threshold(threshold)
+            score = rate_threshold(threshold, images, image_click_data)
             # the lower the score, the better the threshold. 
             # I use <= instead of < because I want to allow small variations.
             if score <= best_score:
