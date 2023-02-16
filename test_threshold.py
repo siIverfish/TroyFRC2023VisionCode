@@ -120,6 +120,7 @@ def main():
                 # set the new best threshold
                 best_score = score
                 print(f"------------------- New best score: {best_score} -------------------")
+                ic(threshold)
                 # we don't have to save the threshold in a variable because it is saved in the file.
                 save_threshold(best, args.path)
             ic(score)

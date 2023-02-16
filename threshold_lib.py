@@ -10,7 +10,7 @@ import cv2 as cv
 
 from icecream import ic
 
-HUE_RANGE = 10
+HUE_RANGE = 60
 
 @dataclass
 class Threshold:
@@ -44,12 +44,19 @@ def generate_starting_threshold(image_metadata, path):
         count += 1
     averages = rgb_color_list / count
     ic(averages)
+    averages /= 255
+    print("After dividing by 255:")
+    ic(averages)
     averages = colorsys.rgb_to_hsv(averages[0], averages[1], averages[2])
-    hue = int(averages[0])
-    return Threshold(
-        lower=np.array([max(  0, hue - HUE_RANGE), 0, 0]),
-        upper=np.array([min(360, hue + HUE_RANGE), 255, 255]),
+    hue = int(averages[0] * 180)
+    ic(hue)
+    threshold = Threshold(
+        lower=np.array([max(  0, hue - HUE_RANGE), 50,     50]),
+        upper=np.array([min(180, hue + HUE_RANGE), 255, 255]),
     )
+    print(" -------------- Generated starting threshold: ------------------ ")
+    ic(threshold)
+    return threshold
 
 
 def center_color(metadatum, path):
@@ -59,7 +66,9 @@ def center_color(metadatum, path):
     ic(metadatum)
     image = cv.imread(f"test_images/{path}/{metadatum['image_name']}")
     color = image[metadatum["center_y"], metadatum["center_x"]]
-    return color[::-1]
+    color = color[::-1]
+    ic(color)
+    return color
 
 #TODO: Take the average color value of all of the pictures and return the Threshold() object.
 
