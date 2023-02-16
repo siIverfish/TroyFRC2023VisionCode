@@ -1,112 +1,107 @@
 [
     {
-        "center_x": 304,
-        "center_y": 276,
+        "center_x": 299,
+        "center_y": 283,
         "image_name": "test_0.jpg"
     },
     {
-        "center_x": 471,
-        "center_y": 340,
+        "center_x": 474,
+        "center_y": 339,
         "image_name": "test_1.jpg"
     },
     {
-        "center_x": 457,
-        "center_y": 122,
+        "center_x": 459,
+        "center_y": 123,
         "image_name": "test_2.jpg"
     },
     {
-        "center_x": 115,
-        "center_y": 118,
+        "center_x": 88,
+        "center_y": 113,
         "image_name": "test_3.jpg"
     },
     {
-        "center_x": 111,
-        "center_y": 371,
+        "center_x": 120,
+        "center_y": 395,
         "image_name": "test_4.jpg"
     },
     {
-        "center_x": 318,
-        "center_y": 329,
+        "center_x": 306,
+        "center_y": 331,
         "image_name": "test_5.jpg"
     },
     {
-        "center_x": 259,
-        "center_y": 181,
-        "image_name": "test_6.jpg"
-    },
-    {
-        "center_x": 254,
-        "center_y": 264,
+        "center_x": 248,
+        "center_y": 287,
         "image_name": "test_7.jpg"
     },
     {
-        "center_x": 217,
-        "center_y": 141,
+        "center_x": 213,
+        "center_y": 149,
         "image_name": "test_8.jpg"
     },
     {
-        "center_x": 349,
-        "center_y": 183,
+        "center_x": 352,
+        "center_y": 173,
         "image_name": "test_9.jpg"
     },
     {
-        "center_x": 416,
-        "center_y": 299,
+        "center_x": 409,
+        "center_y": 292,
         "image_name": "test_10.jpg"
     },
     {
-        "center_x": 395,
-        "center_y": 423,
+        "center_x": 411,
+        "center_y": 449,
         "image_name": "test_11.jpg"
     },
     {
-        "center_x": 171,
-        "center_y": 292,
+        "center_x": 162,
+        "center_y": 281,
         "image_name": "test_12.jpg"
     },
     {
-        "center_x": 363,
-        "center_y": 196,
+        "center_x": 335,
+        "center_y": 198,
         "image_name": "test_13.jpg"
     },
     {
-        "center_x": 309,
-        "center_y": 203,
+        "center_x": 299,
+        "center_y": 219,
         "image_name": "test_14.jpg"
     },
     {
-        "center_x": 305,
-        "center_y": 203,
+        "center_x": 330,
+        "center_y": 215,
         "image_name": "test_15.jpg"
     },
     {
-        "center_x": 262,
-        "center_y": 353,
+        "center_x": 273,
+        "center_y": 350,
         "image_name": "test_16.jpg"
     },
     {
-        "center_x": 530,
-        "center_y": 359,
+        "center_x": 529,
+        "center_y": 349,
         "image_name": "test_17.jpg"
     },
     {
-        "center_x": 538,
-        "center_y": 170,
+        "center_x": 537,
+        "center_y": 163,
         "image_name": "test_18.jpg"
     },
     {
-        "center_x": 523,
-        "center_y": 227,
+        "center_x": 516,
+        "center_y": 253,
         "image_name": "test_19.jpg"
     },
     {
-        "center_x": 327,
-        "center_y": 199,
+        "center_x": 378,
+        "center_y": 248,
         "image_name": "test_20.jpg"
     },
     {
-        "center_x": 400,
-        "center_y": 330,
+        "center_x": 358,
+        "center_y": 265,
         "image_name": "test_21.jpg"
     }
 ]

@@ -3,13 +3,14 @@
 import json
 import os.path
 import numpy as np
+import colorsys
 from dataclasses import dataclass
 
 import cv2 as cv
 
 from icecream import ic
 
-HUE_RANGE = 10
+HUE_RANGE = 60
 
 @dataclass
 class Threshold:
@@ -31,29 +32,55 @@ class Threshold:
         return cls(lower=np.array(data["lower"]), upper=np.array(data["upper"]))
 
 
-def generate_starting_threshold(metadatum, path):
-    """Looks at the image's center and generates a threshold around it"""
+def generate_starting_threshold(image_metadata, path):
+    """
+    Looks at the center of the first image in metadatum and generates a threshold around it.
+    Always uses a hue range of HUE_RANGE.
+    """
+    count = 0
+    rgb_color_list = np.array([0, 0, 0])
+    for i in image_metadata:
+        rgb_color_list += center_color(i, path) 
+        count += 1
+    averages = rgb_color_list / count
+    ic(averages)
+    averages /= 255
+    print("After dividing by 255:")
+    ic(averages)
+    averages = colorsys.rgb_to_hsv(averages[0], averages[1], averages[2])
+    hue = int(averages[0] * 180)
+    ic(hue)
+    threshold = Threshold(
+        lower=np.array([max(  0, hue - HUE_RANGE), 50,     50]),
+        upper=np.array([min(180, hue + HUE_RANGE), 255, 255]),
+    )
+    print(" -------------- Generated starting threshold: ------------------ ")
+    ic(threshold)
+    return threshold
+
+
+def center_color(metadatum, path):
+    #I'm assuming the center_color returns an (R,G,B) tuple. I'm not sure if cv.imread(img)[y,x] returns this tuple, please lmk if I'm wrong.
+    # oh god the image is in BGR ill add a reverse() to the end of the function
+    """Returns the RGB color value of the center of a given image (by metadatum)"""
+    ic(metadatum)
     image = cv.imread(f"test_images/{path}/{metadatum['image_name']}")
     color = image[metadatum["center_y"], metadatum["center_x"]]
-    return Threshold(
-        lower=np.array([color[0] - HUE_RANGE, 0, 0]),
-        upper=np.array([color[0] + HUE_RANGE, 255, 255]),
-    )
+    color = color[::-1]
+    ic(color)
+    return color
 
+#TODO: Take the average color value of all of the pictures and return the Threshold() object.
 
-def load_threshold(path, image_metadata=None):
-    """Returns the initial threshold to test."""
+def load_threshold(path):
+    """Returns the initial threshold to test, it should return the average of all colors."""
     save_path = f"test_data/{path}/threshold.json"
     if os.path.isfile(save_path):
         with open(save_path, "r", encoding="utf-8") as f:
-            threshold = Threshold.from_json(json.load(f))
+            return Threshold.from_json(json.load(f))
     else:
-        if image_metadata is None:
-            raise ValueError("Threshold file does not exist.")
-        else:
-            threshold = generate_starting_threshold(image_metadata[0], path)
-    ic(threshold)
-    return threshold
+        return None
+            
 
 
 def save_threshold(threshold, path):
