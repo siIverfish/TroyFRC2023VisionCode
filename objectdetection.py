@@ -43,10 +43,11 @@ def infinite_frame_stream():
     """
     cap = cv.VideoCapture(CAMERA_PORT)
     while True:
-        _, frame = cap.read()
-        if frame is None:
+        ret, frame = cap.read()
+        #use whether cap.read() says that the frame is read correctly rather than getting whether the frame is empty ourselves
+        #https://docs.opencv.org/3.4/dd/d43/tutorial_py_video_display.html
+        if not ret:
             print("Error reading frame")
-            time.sleep(0.2)
             continue
         # Exit if the user presses 'q'
         key = cv.waitKey(1)
