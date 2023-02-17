@@ -19,9 +19,11 @@ import argparse
 from icecream import ic
 import numpy as np
 import cv2 as cv
+import time
 
 from fps_counter import FPSCounter
 from threshold_lib import load_threshold, Threshold
+from constants import *
 
 from contour_lib import (
     get_maximum_contour,
@@ -39,12 +41,13 @@ def infinite_frame_stream():
     Exits the program if the user presses 'q' and waits between frames.
     Saves the frame if the user presses 's' and the save argument is True.
     """
-    cap = cv.VideoCapture(0)
+    cap = cv.VideoCapture(CAMERA_PORT)
     while True:
         _, frame = cap.read()
         if frame is None:
             print("Error reading frame")
-            exit(1)
+            time.sleep(0.2)
+            continue
         # Exit if the user presses 'q'
         key = cv.waitKey(1)
         if key & 0xFF == ord("q"):
@@ -97,6 +100,8 @@ def process_object(threshold, only_center):
         # Draws stuff on the frame
         cv.circle(frame, object_center, 30, (0, 255, 0), -1)
         
+        FPSCounter().count()
+        
         if not only_center:
             draw_contour_points(frame, largest_object)
             draw_contour_points(frame, sides, (0, 0, 255))
@@ -106,7 +111,6 @@ def process_object(threshold, only_center):
 
         
         cv.imshow("frame", frame)
-        FPSCounter().count()
 
 
 def show_text(frame, text):
@@ -122,21 +126,21 @@ def show_text(frame, text):
     )
 
 
-cube_threshold = Threshold(
-    lower=np.array([118, 87, 86]),
-    upper=np.array([133, 255, 255]),
-)
+# cube_threshold = Threshold(
+#     lower=np.array([118, 87, 86]),
+#     upper=np.array([133, 255, 255]),
+# )
 
-cone_threshold = Threshold(
-    lower=np.array([18, 44, 101]),
-    upper=np.array([31, 232, 255]),
-)
+# cone_threshold = Threshold(
+#     lower=np.array([18, 44, 101]),
+#     upper=np.array([31, 232, 255]),
+# )
 
-# The threshold for the printed picture of the cone I was using for testing
-printed_cone_threshold = Threshold(
-    lower=np.array([ 10,  72, 136]), 
-    upper=np.array([ 63, 176, 204]),
-)
+# # The threshold for the printed picture of the cone I was using for testing
+# printed_cone_threshold = Threshold(
+#     lower=np.array([ 10,  72, 136]), 
+#     upper=np.array([ 63, 176, 204]),
+# )
 
 
 def main():
@@ -151,10 +155,7 @@ def main():
     if args.path is None:
         raise ValueError("Please provide a path to load the threshold from.")
     
-    if args.path == "printed_cone":
-        threshold = printed_cone_threshold
-    else:
-        threshold = load_threshold(args.path)
+    threshold = load_threshold(args.path)
     
     process_object(threshold=threshold, only_center=args.only_center)
 

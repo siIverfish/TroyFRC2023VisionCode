@@ -23,6 +23,7 @@ data_path = f"test_data/{args.path}/data.json"
 
 DID_NOT_FIND_IMAGE_PENALTY = 40
 
+
 def make_random_change(threshold):
     """
     Makes a random change to the threshold for testing.

@@ -7,7 +7,9 @@ This is the simplest program in the project.
 
 import cv2 as cv
 import argparse
+import time
 
+from constants import *
 from image_saver import ImageSaver
 
 parser = argparse.ArgumentParser("Shows the camera stream and detects objects based on a threshold value.")
@@ -23,12 +25,13 @@ def infinite_frame_stream():
     Returns a generator that yields frames from the webcam.
     Exits the program if the user presses 'q' and waits between frames.
     """
-    cap = cv.VideoCapture(0)
+    cap = cv.VideoCapture(CAMERA_PORT)
     while True:
         _, frame = cap.read()
         if frame is None:
             print("Error reading frame")
-            exit(1)
+            time.sleep(1)
+            continue
         # Exit if the user presses 'q'
         key = cv.waitKey(1)
         if key & 0xFF == ord("q"):
