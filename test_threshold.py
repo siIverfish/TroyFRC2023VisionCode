@@ -15,6 +15,8 @@ from threshold_lib import load_threshold, save_threshold, generate_starting_thre
 # This is an argument parser that gets the --path argument from the command line and saves it to args.path
 parser = argparse.ArgumentParser("Tests a threshold against the images in test_images.")
 parser.add_argument("--path", type=str, help="The path to the test data file.")
+# an int argument for the entropy value
+parser.add_argument("--entropy", type=int, default=10, help="The entropy value for the threshold. The higher the value, the more random the threshold will be.")
 args = parser.parse_args()
 
 # The path to the saved threshold and the path to the labeled data
@@ -24,17 +26,17 @@ data_path = f"test_data/{args.path}/data.json"
 DID_NOT_FIND_IMAGE_PENALTY = 40
 
 
-def make_random_change(threshold):
+def make_random_change(threshold, entropy=10):
     """
     Makes a random change to the threshold for testing.
     """
     return Threshold(
-        lower=threshold.lower + np.random.randint(-10, 10, 3),
-        upper=threshold.upper + np.random.randint(-10, 10, 3),
+        lower=threshold.lower + np.random.randint(-entropy, entropy, 3),
+        upper=threshold.upper + np.random.randint(-entropy, entropy, 3),
     )
 
 
-def generate_test_thresholds(base_threshold):
+def generate_test_thresholds(base_threshold, entropy=10):
     """
     Generates a bunch of random thresholds to test.
     These will be used to find the best threshold by incrementally making random changes 
@@ -53,12 +55,12 @@ def load_data(path):
     with open(f"test_data/{path}/data.json", "r", encoding="utf-8") as f:
         return json.load(f)
 
-def load_images(image_click_data):
+def load_images(path, image_click_data):
     # loads all of the images mentioned in the data
     images = []
     for data in image_click_data:
         image_name = data["image_name"]
-        images.append(cv.imread(f"test_images/{args.path}/{image_name}"))
+        images.append(cv.imread(f"test_images/{path}/{image_name}"))
     return images
 
 
@@ -99,7 +101,7 @@ def main():
     The best threshold is saved to a file so that it can be used in objectdetection.py.
     """
     image_click_data = load_data(args.path)
-    images = load_images(image_click_data)
+    images = load_images(args.path, image_click_data)
     # loads in the previous best threshold
     best = load_threshold(args.path)
     if best is None:
@@ -113,7 +115,7 @@ def main():
         best_score = float("inf")
     while True:
         # generate 5 random thresholds and see which one is the best
-        for threshold in generate_test_thresholds(best):
+        for threshold in generate_test_thresholds(best, args.entropy):
             score = rate_threshold(threshold, images, image_click_data)
             # the lower the score, the better the threshold. 
             # I use <= instead of < because I want to allow small variations.

@@ -87,8 +87,9 @@ def save_threshold(threshold, path):
     """Saves the threshold to a file."""
     save_path = f"test_data/{path}/threshold.json"
     try:
-        with open(save_path, "w", encoding="utf-8") as f:
+        with open(save_path, "w") as f:
             json.dump(threshold.to_json(), f)  
+            print(" -------------- SAVED THRESHOLD ------------------ ")
     except PermissionError as error:
         print(error)
         save_threshold(threshold, path)
